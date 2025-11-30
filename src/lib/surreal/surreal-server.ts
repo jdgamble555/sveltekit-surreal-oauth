@@ -107,7 +107,7 @@ export function surrealServer({
 		console.log(res[0]);
 	}
 
-	async function login(username: string, password: string) {
+	async function login(email: string, password: string) {
 		logout();
 
 		const { data: db, error: dbError } = await connect();
@@ -123,7 +123,7 @@ export function surrealServer({
 			db,
 			namespace,
 			database,
-			username,
+			email,
 			password
 		});
 
@@ -142,7 +142,7 @@ export function surrealServer({
 		};
 	}
 
-	async function register(username: string, password: string) {
+	async function register(email: string, password: string) {
 		logout();
 
 		const { data: db, error: dbError } = await connect();
@@ -158,7 +158,7 @@ export function surrealServer({
 			db,
 			namespace,
 			database,
-			username,
+			email,
 			password
 		});
 

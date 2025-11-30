@@ -3,7 +3,7 @@ import type { PageServerLoad, Actions } from './$types';
 import * as v from 'valibot';
 
 const registerSchema = v.object({
-	username: v.pipe(v.string(), v.minLength(3, 'Username must be at least 3 characters long')),
+	email: v.pipe(v.string(), v.email()),
 	password: v.pipe(v.string(), v.minLength(3, 'Password must be at least 3 characters long'))
 });
 
@@ -17,6 +17,7 @@ export const load: PageServerLoad = async ({ locals: { surreal } }) => {
 
 export const actions: Actions = {
 	register: async ({ request, locals: { surreal } }) => {
+		
 		const formData = await request.formData();
 
 		const data = Object.fromEntries(formData);
@@ -27,9 +28,9 @@ export const actions: Actions = {
 			error(400, result.issues[0].message);
 		}
 
-		const { username, password } = result.output;
+		const { email, password } = result.output;
 
-		const { error: registerError } = await surreal.register(username, password);
+		const { error: registerError } = await surreal.register(email, password);
 
 		if (registerError) {
 			error(500, registerError.message);

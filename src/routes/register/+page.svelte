@@ -12,9 +12,9 @@
 	>
 		<input
 			class="rounded-lg border p-3"
-			type="text"
-			name="username"
-			placeholder="Username"
+			type="email"
+			name="email"
+			placeholder="Email"
 			autocomplete="off"
 		/>
 		<input

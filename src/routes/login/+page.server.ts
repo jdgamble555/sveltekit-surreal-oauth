@@ -1,5 +1,11 @@
 import { redirect, error } from '@sveltejs/kit';
 import type { PageServerLoad, Actions } from './$types';
+import * as v from 'valibot';
+
+const loginSchema = v.object({
+	email: v.pipe(v.string(), v.email()),
+	password: v.pipe(v.string(), v.minLength(3, 'Password must be at least 3 characters long'))
+});
 
 
 export const load: PageServerLoad = async ({ locals: { surreal } }) => {
@@ -12,15 +18,20 @@ export const load: PageServerLoad = async ({ locals: { surreal } }) => {
 
 export const actions: Actions = {
 	login: async ({ request, locals: { surreal } }) => {
+		
 		const formData = await request.formData();
 
-		const { username, password } = Object.fromEntries(formData);
+		const data = Object.fromEntries(formData);
 
-		if (typeof username !== 'string' || typeof password !== 'string') {
-			error(500, 'Invalid form data');
+		const result = v.safeParse(loginSchema, data);
+
+		if (!result.success) {
+			error(400, result.issues[0].message);
 		}
 
-		const { error: loginError } = await surreal.login(username, password);
+		const { email, password } = result.output;
+
+		const { error: loginError } = await surreal.login(email, password);
 
 		if (loginError) {
 			return {

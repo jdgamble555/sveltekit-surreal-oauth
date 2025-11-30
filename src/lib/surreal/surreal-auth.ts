@@ -101,13 +101,13 @@ export async function surrealLogin({
 	db,
 	namespace,
 	database,
-	username,
+	email,
 	password
 }: {
 	db: Surreal;
 	namespace: string;
 	database: string;
-	username: string;
+	email: string;
 	password: string;
 }) {
 	try {
@@ -115,7 +115,7 @@ export async function surrealLogin({
 			namespace,
 			database,
 			variables: {
-				username,
+				email,
 				password
 			},
 			access: 'user'
@@ -151,13 +151,13 @@ export async function surrealRegister({
 	db,
 	namespace,
 	database,
-	username,
+	email,
 	password
 }: {
 	db: Surreal;
 	namespace: string;
 	database: string;
-	username: string;
+	email: string;
 	password: string;
 }) {
 	try {
@@ -165,7 +165,7 @@ export async function surrealRegister({
 			namespace,
 			database,
 			variables: {
-				username,
+				email,
 				password
 			},
 			access: 'user'
@@ -220,7 +220,7 @@ export async function surrealChangePassword({
 				{
 					id: string;
 					password: string;
-					username: string;
+					email: string;
 				}
 			][]
 		>(query, {

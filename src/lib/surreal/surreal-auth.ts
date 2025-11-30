@@ -46,25 +46,19 @@ export async function surrealGHLogin({
 	db,
 	namespace,
 	database,
-	code,
-	github_client_id,
-	github_secret_id
+	code
 }: {
 	db: Surreal;
 	namespace: string;
 	database: string;
 	code: string;
-	github_client_id: string;
-	github_secret_id: string;
 }) {
 	try {
 		const signinData = await db.signin({
 			namespace,
 			database,
 			variables: {
-				code,
-				github_client_id,
-				github_secret_id
+				code
 			},
 			access: 'github'
 		});
@@ -75,7 +69,6 @@ export async function surrealGHLogin({
 		};
 	} catch (e) {
 		if (e instanceof SurrealDbError) {
-			console.log(e.message);
 			return {
 				data: null,
 				error: e

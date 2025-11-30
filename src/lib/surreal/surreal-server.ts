@@ -1,4 +1,4 @@
-import { createGitHubOAuthLoginUrl } from '../../routes/login/github-oath';
+import { createGitHubOAuthLoginUrl } from './github-oath';
 import { decodeJwt } from './jwt';
 import {
 	surrealChangePassword,
@@ -21,7 +21,11 @@ const TOKEN_COOKIE_OPTIONS = {
 export function surrealServer({
 	cookies: { cookieName, setCookie, getCookie },
 	credentials: { url, namespace, database },
-	oauth: { github: { client_id: github_client_id, secret_id: github_secret_id } },
+	oauth: {
+		github: {
+			client_id: github_client_id
+		}
+	},
 	callbackURL
 }: {
 	cookies: {
@@ -32,7 +36,6 @@ export function surrealServer({
 	oauth: {
 		github: {
 			client_id: string;
-			secret_id: string;
 		}
 	};
 	credentials: {
@@ -77,34 +80,6 @@ export function surrealServer({
 			data: db,
 			error: null
 		};
-	}
-
-	async function debugGithub(code: string) {
-		const { data: db, error: dbError } = await connect();
-
-		if (dbError) {
-			return {
-				db: null,
-				error: dbError
-			};
-		}
-
-		const res = await db.query(
-    `
-    RETURN fn::github_debug(
-      $code,
-      $github_client_id,
-      $github_secret_id
-    );
-    `,
-			{
-				code,
-				github_client_id,
-				github_secret_id
-			}
-		);
-
-		console.log(res[0]);
 	}
 
 	async function login(email: string, password: string) {
@@ -211,9 +186,7 @@ export function surrealServer({
 			db,
 			namespace,
 			database,
-			code,
-			github_client_id,
-			github_secret_id
+			code
 		});
 
 		if (loginError) {
@@ -325,7 +298,6 @@ export function surrealServer({
 		getUserInfo,
 		changePassword,
 		loginWithCallback,
-		getGitHubURL,
-		debugGithub
+		getGitHubURL
 	};
 }

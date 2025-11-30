@@ -379,12 +379,6 @@ DEFINE FUNCTION OVERWRITE fn::github_login(
     RETURN $new_user;
 };
 
-
-
-
-
-
-
 DEFINE ACCESS OVERWRITE github ON DATABASE TYPE RECORD
     SIGNUP (
         fn::github_login($code)

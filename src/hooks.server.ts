@@ -2,8 +2,7 @@ import type { Handle } from '@sveltejs/kit';
 import {
 	PRIVATE_SURREALDB_URL,
 	PRIVATE_SURREALDB_NAMESPACE,
-	PRIVATE_SURREALDB_DATABASE,
-	PRIVATE_GITHUB_CLIENT_SECRET
+	PRIVATE_SURREALDB_DATABASE
 } from '$env/static/private';
 import { surrealServer } from './lib/surreal/surreal-server';
 import { PUBLIC_GITHUB_CLIENT_ID } from '$env/static/public';
@@ -27,8 +26,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		},
 		oauth: {
 			github: {
-				client_id: PUBLIC_GITHUB_CLIENT_ID,
-				secret_id: PRIVATE_GITHUB_CLIENT_SECRET
+				client_id: PUBLIC_GITHUB_CLIENT_ID
 			}
 		},
 		callbackURL: event.url.origin + '/auth/callback'

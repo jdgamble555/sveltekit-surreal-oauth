@@ -42,6 +42,61 @@ export async function surrealConnect({
 	};
 }
 
+export async function surrealGHLogin({
+	db,
+	namespace,
+	database,
+	code,
+	github_client_id,
+	github_secret_id
+}: {
+	db: Surreal;
+	namespace: string;
+	database: string;
+	code: string;
+	github_client_id: string;
+	github_secret_id: string;
+}) {
+	try {
+		const signinData = await db.signin({
+			namespace,
+			database,
+			variables: {
+				code,
+				github_client_id,
+				github_secret_id
+			},
+			access: 'github'
+		});
+
+		return {
+			data: signinData,
+			error: null
+		};
+	} catch (e) {
+		if (e instanceof SurrealDbError) {
+			console.log(e.message);
+			return {
+				data: null,
+				error: e
+			};
+		}
+
+		if (e instanceof Error) {
+			return {
+				data: null,
+				error: e
+			};
+		}
+
+		return {
+			data: null,
+			error: new Error('Unknown error during login')
+		};
+	}
+}
+
+
 export async function surrealLogin({
 	db,
 	namespace,

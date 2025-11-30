@@ -1,7 +1,9 @@
+import { createGitHubOAuthLoginUrl } from '../../routes/login/github-oath';
 import { decodeJwt } from './jwt';
 import {
 	surrealChangePassword,
 	surrealConnect,
+	surrealGHLogin,
 	surrealLogin,
 	surrealRegister
 } from './surreal-auth';
@@ -18,18 +20,27 @@ const TOKEN_COOKIE_OPTIONS = {
 
 export function surrealServer({
 	cookies: { cookieName, setCookie, getCookie },
-	credentials: { url, namespace, database }
+	credentials: { url, namespace, database },
+	oauth: { github: { client_id: github_client_id, secret_id: github_secret_id } },
+	callbackURL
 }: {
 	cookies: {
 		cookieName?: string;
 		setCookie: SetCoookieFn;
 		getCookie: GetCookieFn;
 	};
+	oauth: {
+		github: {
+			client_id: string;
+			secret_id: string;
+		}
+	};
 	credentials: {
 		url: string;
 		namespace: string;
 		database: string;
 	};
+	callbackURL: string
 }) {
 	const tokenName = cookieName || 'surreal_token';
 
@@ -66,6 +77,34 @@ export function surrealServer({
 			data: db,
 			error: null
 		};
+	}
+
+	async function debugGithub(code: string) {
+		const { data: db, error: dbError } = await connect();
+
+		if (dbError) {
+			return {
+				db: null,
+				error: dbError
+			};
+		}
+
+		const res = await db.query(
+    `
+    RETURN fn::github_debug(
+      $code,
+      $github_client_id,
+      $github_secret_id
+    );
+    `,
+			{
+				code,
+				github_client_id,
+				github_secret_id
+			}
+		);
+
+		console.log(res[0]);
 	}
 
 	async function login(username: string, password: string) {
@@ -136,6 +175,68 @@ export function surrealServer({
 			db,
 			error: null
 		};
+	}
+
+	async function loginWithCallback(url: URL) {
+
+		logout();
+
+		const code = url.searchParams.get('code');
+		const state = url.searchParams.get('state');
+
+		if (!code) {
+			return {
+				data: null,
+				error: new Error('Missing authorization code')
+			};
+		}
+
+		let next = '/';
+
+		try {
+			const parsed = state && JSON.parse(state);
+			next = parsed?.next ?? '/';
+		} catch { /* empty */ }
+
+		const { data: db, error: dbError } = await connect();
+
+		if (dbError) {
+			return {
+				data: null,
+				error: dbError
+			};
+		}
+
+		const { data: token, error: loginError } = await surrealGHLogin({
+			db,
+			namespace,
+			database,
+			code,
+			github_client_id,
+			github_secret_id
+		});
+
+		if (loginError) {
+			return {
+				data: null,
+				error: loginError
+			};
+		}
+
+		setCookie(tokenName, token, TOKEN_COOKIE_OPTIONS);
+
+		return {
+			data: next,
+			error: null
+		};
+	}
+
+	function getGitHubURL(next: string) {
+		return createGitHubOAuthLoginUrl(
+			callbackURL,
+			next,
+			github_client_id
+		);
 	}
 
 	async function changePassword(oldPassword: string, newPassword: string) {
@@ -222,6 +323,9 @@ export function surrealServer({
 		logout,
 		getUser,
 		getUserInfo,
-		changePassword
+		changePassword,
+		loginWithCallback,
+		getGitHubURL,
+		debugGithub
 	};
 }
